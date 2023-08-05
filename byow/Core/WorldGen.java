@@ -18,7 +18,7 @@ public class WorldGen {
         ter.initialize(WIDTH, HEIGHT);
         TETile[][] map = new TETile[WIDTH][HEIGHT];
         utils = new RoomUtils(map);
-        mapGen(113574541, map, utils);
+        mapGen(113574441, map, utils);
 
         ter.renderFrame(map);
 
@@ -35,17 +35,21 @@ public class WorldGen {
             }
         }
         //create rooms
-        int roomAttempts = 30;
+        int roomAttempts = 60;
         boolean valid;
         for(int i = 0; i < roomAttempts; i++) {
-            System.out.println("count -- " + i);
-            Room room = new Room(randy, 20, 5);
+            //System.out.println("count -- " + i);
+            Room room = new Room(randy, 22, 10);
             if(room.makeRoom(map)){
                 utils.addRoom(room);
             }
         }
         //create hallways
+        for(Room room: utils.getRoomList()) {
+            room.generateHallway(utils.getRoomList(), map, utils);
+        }
         System.out.println(utils);
+
     }
 
 }
