@@ -171,7 +171,7 @@ public class Room {
         }
         return true;
     }
-    public boolean generateHallway(ArrayList<Room> rooms, TETile[][] map ){
+    public boolean generateHallway(ArrayList<Room> rooms, TETile[][] map){
         Room Hallway = new Room(randy);
         width = randy.nextInt(4 - 2) + 2;
         center[0] = (x + width) / 2; center[1] = (y + height) / 2; //center coord
@@ -184,6 +184,7 @@ public class Room {
             for(int k = x; k > 0; k--) {
                 if (!TETile.tileEquals(map[x][k], Tileset.NOTHING)) {
                 }
+                //first
             }
 
         }
