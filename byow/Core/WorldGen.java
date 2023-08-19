@@ -18,7 +18,7 @@ public class WorldGen {
         ter.initialize(WIDTH, HEIGHT);
         TETile[][] map = new TETile[WIDTH][HEIGHT];
         utils = new RoomUtils(map);
-        mapGen(114574451, map, utils);
+        mapGen(114574454, map, utils);
         ter.renderFrame(map);
     }
 
@@ -131,7 +131,7 @@ public class WorldGen {
 
     public static void determineDoorwayPosition(int[][] commonWall, TETile[][] map) {
         // Determine the position for the doorway within the common wall
-        System.out.print("\nENDGAME\n");
+        System.out.print("\ngets here\n");
         int startX = commonWall[0][0];
         int startY = commonWall[0][1];
         int endX = commonWall[1][0];
@@ -139,7 +139,7 @@ public class WorldGen {
 
         for (int x = startX; x <= endX; x++) {
             for (int y = startY; y <= endY; y++) {
-                map[x][y] = Tileset.NOTHING;
+                map[x][y] = Tileset.UNLOCKED_DOOR;
             }
         }
     }

@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class Room {
-    protected boolean connected = false;
+    protected boolean isHallway = false;
     //room size length and width constraints
     protected int max;
     protected int min;
@@ -109,12 +109,15 @@ public class Room {
         //System.out.println("cool");
         // ~-~-~-~-~-~-~-~-~- DRAW -- ROOM -~-~-~-~-~-~-~-~-~-~-~
         if (valid) {
-            drawRoom(map, Tileset.WALL);
+
+            drawRoom(map, Tileset.WALL, Tileset.FLOOR);
             return true; //success
         }
         return false; //collision detected
     }
-    public void drawRoom(TETile[][] map, TETile tile){
+    public void drawRoom(TETile[][] map, TETile tile, TETile inside){
+        TETile hallway= Tileset.FLOOR;
+        int cur = 0;
         for (int k = bl[0]; k < br[0]; k++) {
             map[k][bl[1]] = tile;
         }
@@ -129,6 +132,20 @@ public class Room {
         //draw right side
         for (int k = br[1]; k < tr[1]; k++) {
             map[br[0]][k] = tile;
+        }
+        //draw inside
+        if(!isHallway) {
+            for (int r = bl[0] + 1; r < br[0]; r++) {
+                for (int c = bl[1] + 1; c < tl[1]; c++) {
+                    map[r][c] = inside;
+                }
+            }
+        }else{
+            for (int r = bl[0] + 1; r < br[0]; r++) {
+                for (int c = bl[1] + 1; c < tl[1]; c++) {
+                    map[r][c] = hallway;
+                }
+            }
         }
     }
     public boolean checkCollision(TETile[][] map){
@@ -206,8 +223,19 @@ public class Room {
         // If both exist, the rooms overlap
         return horizontalOverlap && verticalOverlap;
     }
+    public boolean hallwayOverlaps(Room other) {
+
+        // Check for horizontal overlap
+        boolean horizontalOverlap = (this.tr[0] >= other.tl[0] && this.tl[0] <= other.tr[0]);
+
+        // Check for vertical overlap with a minimum distance of 0 coordinate
+        boolean verticalOverlap = this.tl[1] >= other.bl[1] && this.bl[1] <= other.tl[1];
+        // If both exist, the rooms overlap
+        return horizontalOverlap && verticalOverlap;
+    }
     public Room newHallway(){
         Room hallway = new Room(randy);
+        hallway.isHallway = true;
         hallway.setWidth(randy.nextInt(5 - 2) + 2);
         center[0] = x+ (width / 2); center[1] = y + (height / 2); //center coord
         System.out.print("center x: "+center[0]+ "  center y: "+center[1]);
@@ -235,7 +263,7 @@ public class Room {
                 hallway.setBr(x - 1, hallway.hy - hallway.getWidth()/2);
                 hallway.x = hallway.bl[0];
                 hallway.y = hallway.bl[1];
-                hallway.drawRoom(map, Tileset.GRASS);
+                hallway.drawRoom(map, Tileset.WALL, Tileset.FLOOR);
                 utils.addHallway(hallway);
                 clearPath = true;
 
@@ -257,7 +285,7 @@ public class Room {
                 hallway.setBr(hallway.hx + hallway.getWidth()/2, k + 1);
                 hallway.x = hallway.bl[0];
                 hallway.y = hallway.bl[1];
-                hallway.drawRoom(map, Tileset.WATER);
+                hallway.drawRoom(map, Tileset.WALL, Tileset.FLOOR);
                 utils.addHallway(hallway);
                 clearPath = true;
 
@@ -279,7 +307,7 @@ public class Room {
                 hallway.setBr(k - 1, hallway.hy - hallway.getWidth()/2);
                 hallway.x = hallway.bl[0];
                 hallway.y = hallway.bl[1];
-                hallway.drawRoom(map, Tileset.GRASS);
+                hallway.drawRoom(map, Tileset.WALL, Tileset.FLOOR);
                 utils.addHallway(hallway);
                 clearPath = true;
                 break;
@@ -300,7 +328,7 @@ public class Room {
                 hallway.setBr(hallway.hx + hallway.getWidth()/2, tl[1] + 1);
                 hallway.x = hallway.bl[0];
                 hallway.y = hallway.bl[1];
-                hallway.drawRoom(map, Tileset.TREE);
+                hallway.drawRoom(map, Tileset.WALL, Tileset.FLOOR);
                 utils.addHallway(hallway);
                 clearPath = true;
                 break;

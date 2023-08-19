@@ -10,6 +10,7 @@ public class RoomUtils {
     public ArrayList<Room> hallwayList = new ArrayList<Room>();
     public ArrayList<Room> allObjects = new ArrayList<Room>();
     public TETile[][] map;
+    public TETile[] tileList= {Tileset.GRASS, Tileset.BATHROOM, Tileset.MOUNTAIN, Tileset.SAND};
     public RoomUtils(TETile[][] map){
         this.map = map;
     }
@@ -35,18 +36,22 @@ public class RoomUtils {
                 map[r][c] = Tileset.NOTHING;
             }
         }
+        int cur = 0;
         for(Room room: roomList){
-            room.drawRoom(map, Tileset.WALL);
+            room.drawRoom(map, Tileset.WALL, tileList[cur++]);
+            if(cur == 4){
+                cur = 0;
+            }
         }
         for(Room hallway: hallwayList){
-            hallway.drawRoom(map, Tileset.TREE);
+            hallway.drawRoom(map, Tileset.WALL, Tileset.FLOOR);
         }
     }
     public void removeCollisions(){
         ArrayList<Room> toRemove = new ArrayList<Room>();
         for (Room room1 : hallwayList) {
             for (Room room2 : hallwayList) {
-                if (room1 != room2 && room1.overlapsWith(room2)) {
+                if (room1 != room2 && room1.hallwayOverlaps(room2)) {
                     System.out.println("yozo");
                     toRemove.add(room1);
                 }
@@ -54,6 +59,7 @@ public class RoomUtils {
         }
         for (Room room: toRemove){
             allObjects.remove(room);
+            hallwayList.remove(room);
         }
     }
     public String toString(){
