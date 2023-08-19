@@ -21,6 +21,8 @@ public class Room {
     protected int[] tl = new int[2]; // top left
     protected int[] tr = new int[2]; // top right
     protected int[] br = new int[2]; // bottom right
+    int hy;
+    int hx;
 
 
     public Room(Random randy, int max, int min) {
@@ -88,7 +90,7 @@ public class Room {
         tl[0] = x; tl[1] = y + height; // top left
         tr[0] = x + width; tr[1] = y + height; // top right
         br[0] = x + width; br[1] = y; // bottom right
-        center[0] = (x + width) / 2; center[1] = (y + height) / 2; //gcenter coord
+        center[0] = x + (width / 2); center[1] = y + (height / 2); //center coord
 
         //get random coord
         boolean valid = true;
@@ -182,22 +184,20 @@ public class Room {
 //        }
         return true;
     }
-//    public boolean checkInside(ArrayList<Room> rooms){
-//
-//        if(rooms.size() == 0){return true;}
-//        for(Room room : rooms) {
-//            //check bottom left corner
-//            if (room.getBl()[0] <= bl[0] && room.getBr()[0] >= bl[0] && room.getBl()[1] <= bl[1] && room.getTl()[1] >= bl[1]) {
-//                return false;
-//            }
-//            //check top right corner
-//            if (room.getBl()[0] <= tr[0] && room.getBr()[0] >= tr[0] && room.getBl()[1] <= tr[1] && room.getTl()[1] >= tr[1]) {
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
+    public boolean checkInside(Room room){
+            //check bottom left corner
+            if (room.getBl()[0] <= bl[0] && room.getBr()[0] >= bl[0] && room.getBl()[1] <= bl[1] && room.getTl()[1] >= bl[1]) {
+                return false;
+            }
+            //check top right corner
+            if (room.getBl()[0] <= tr[0] && room.getBr()[0] >= tr[0] && room.getBl()[1] <= tr[1] && room.getTl()[1] >= tr[1]) {
+                return false;
+            }
+        return true;
+    }
+
     public boolean overlapsWith(Room other) {
+
         // Check for horizontal overlap
         boolean horizontalOverlap = !(this.tr[0] + 1 < other.tl[0] || this.tl[0] > other.tr[0] + 1);
 
@@ -206,94 +206,101 @@ public class Room {
         // If both exist, the rooms overlap
         return horizontalOverlap && verticalOverlap;
     }
-    public boolean generateHallway(ArrayList<Room> rooms, TETile[][] map, RoomUtils utils){
+    public Room newHallway(){
         Room hallway = new Room(randy);
         hallway.setWidth(randy.nextInt(5 - 2) + 2);
-        center[0] = (x + x +width) / 2; center[1] = (y + y + height) / 2; //center coord
+        center[0] = x+ (width / 2); center[1] = y + (height / 2); //center coord
         System.out.print("center x: "+center[0]+ "  center y: "+center[1]);
-
-        int hallway_y = center[1] + randy.nextInt(2) - 1; //hallway y coord
-        System.out.print("hallway y: "+hallway_y+ "  hallway_x: ");
-
-        int hallway_x = center[0] + randy.nextInt(2) - 1; //hallway x coord
+        hallway.hy = center[1] + randy.nextInt(2) - 1; //hallway y coord
+        System.out.print("hallway y: "+hy+ "  hallway_x: ");
+        hallway.hx = center[0] + randy.nextInt(2) - 1; //hallway x coord
+        return hallway;
+    }
+    public boolean generateHallway(ArrayList<Room> rooms, TETile[][] map, RoomUtils utils){
         boolean clearPath = false;
-        System.out.print(hallway_x+"\n");
         int length = 0;
         //find other room go left
+        Room hallway = newHallway();
+        System.out.println("\n"+hallway.hy+"\t"+ hallway.hx+"\n");
         for(int k = x-1; k > 0; k--) {
             System.out.print(k+ "<--\n");
-            if (!TETile.tileEquals(map[k][hallway_y + hallway.getWidth()/2], Tileset.NOTHING) || !TETile.tileEquals(map[k][hallway_y - hallway.getWidth()/2], Tileset.NOTHING)) {
-                if(length == 0){
+            if (!TETile.tileEquals(map[k][hallway.hy + hallway.getWidth()/2], Tileset.NOTHING) || !TETile.tileEquals(map[k][hallway.hy - hallway.getWidth()/2], Tileset.NOTHING)) {
+                if(length <=1){
                     break;
                 }
                 System.out.println("\nwidth: "+ hallway.getWidth()/2);
-                hallway.setBl(k + 1, hallway_y - hallway.getWidth()/2);
-                hallway.setTl(k + 1, hallway_y + hallway.getWidth()/2);
-                hallway.setTr(x - 1, hallway_y + hallway.getWidth()/2);
-                hallway.setBr(x - 1, hallway_y - hallway.getWidth()/2);
+                hallway.setBl(k + 1, hallway.hy - hallway.getWidth()/2);
+                hallway.setTl(k + 1, hallway.hy + hallway.getWidth()/2);
+                hallway.setTr(x - 1, hallway.hy + hallway.getWidth()/2);
+                hallway.setBr(x - 1, hallway.hy - hallway.getWidth()/2);
                 hallway.x = hallway.bl[0];
                 hallway.y = hallway.bl[1];
-                hallway.drawRoom(map, Tileset.FLOOR);
+                hallway.drawRoom(map, Tileset.GRASS);
                 utils.addHallway(hallway);
                 clearPath = true;
-                length = 0;
+
                 break;
             }
             length++;
         }
+        length = 0;
         //find room bottom
-        for(int k = y-1; k > 0; k--) {
-            if (!TETile.tileEquals(map[hallway_x + hallway.getWidth()/2][k], Tileset.NOTHING) || !TETile.tileEquals(map[hallway_x - hallway.getWidth()/2][k], Tileset.NOTHING)){
-                if(length == 0){
+        hallway = newHallway();
+        for(int k = y-2; k > 0; k--) {
+            if (!TETile.tileEquals(map[hallway.hx + hallway.getWidth()/2][k], Tileset.NOTHING) || !TETile.tileEquals(map[hallway.hx - hallway.getWidth()/2][k], Tileset.NOTHING)){
+                if(length <= 1){
                     break;
                 }
-                hallway.setBl(hallway_x - hallway.getWidth()/2, k + 1);
-                hallway.setTl(hallway_x - hallway.getWidth()/2, y - 1);
-                hallway.setTr(hallway_x + hallway.getWidth()/2, y - 1);
-                hallway.setBr(hallway_x + hallway.getWidth()/2, k + 1);
+                hallway.setBl(hallway.hx - hallway.getWidth()/2, k + 1);
+                hallway.setTl(hallway.hx - hallway.getWidth()/2, y - 1);
+                hallway.setTr(hallway.hx + hallway.getWidth()/2, y - 1);
+                hallway.setBr(hallway.hx + hallway.getWidth()/2, k + 1);
                 hallway.x = hallway.bl[0];
                 hallway.y = hallway.bl[1];
-                hallway.drawRoom(map, Tileset.FLOOR);
+                hallway.drawRoom(map, Tileset.WATER);
                 utils.addHallway(hallway);
                 clearPath = true;
-                length = 0;
+
                 break;
             }
             length ++;
         }
-        //find other room go right
+        length = 0;
+//        //find other room go right
+        hallway = newHallway();
         for(int k = br[0]+1; k < Engine.WIDTH; k++) {
-            if (!TETile.tileEquals(map[k][hallway_y + hallway.getWidth()/2], Tileset.NOTHING) || !TETile.tileEquals(map[k][hallway_y - hallway.getWidth()/2], Tileset.NOTHING)) {
+            if (!TETile.tileEquals(map[k][hallway.hy + hallway.getWidth()/2], Tileset.NOTHING) || !TETile.tileEquals(map[k][hallway.hy - hallway.getWidth()/2], Tileset.NOTHING)) {
                 if(length == 0){
                     break;
                 }
-                hallway.setBl(br[0] + 1, hallway_y - hallway.getWidth()/2 );
-                hallway.setTl(br[0] + 1, hallway_y + hallway.getWidth()/2);
-                hallway.setTr(k - 1, hallway_y + hallway.getWidth()/2);
-                hallway.setBr(k - 1, hallway_y - hallway.getWidth()/2);
+                hallway.setBl(br[0] + 1, hallway.hy - hallway.getWidth()/2 );
+                hallway.setTl(br[0] + 1, hallway.hy + hallway.getWidth()/2);
+                hallway.setTr(k - 1, hallway.hy + hallway.getWidth()/2);
+                hallway.setBr(k - 1, hallway.hy - hallway.getWidth()/2);
                 hallway.x = hallway.bl[0];
                 hallway.y = hallway.bl[1];
-                hallway.drawRoom(map, Tileset.FLOOR);
+                hallway.drawRoom(map, Tileset.GRASS);
                 utils.addHallway(hallway);
                 clearPath = true;
-                length = 0;
                 break;
             }
             length++;
         }
+        length = 0;
        //find room going up
+        hallway = newHallway();
         for(int k = tl[1] + 1; k < Engine.HEIGHT; k++) {
-            if (!TETile.tileEquals(map[hallway_x + hallway.getWidth()/2][k], Tileset.NOTHING) || !TETile.tileEquals(map[hallway_x - hallway.getWidth()/2][k], Tileset.NOTHING)) {
+            if (!TETile.tileEquals(map[hallway.hx + hallway.getWidth()/2][k], Tileset.NOTHING) || !TETile.tileEquals(map[hallway.hx - hallway.getWidth()/2][k], Tileset.NOTHING)) {
                 if(length <= 1){
                     break;
                 }
-                hallway.setBl(hallway_x - hallway.getWidth()/2, tl[1] + 1);
-                hallway.setTl(hallway_x - hallway.getWidth()/2, k - 1);
-                hallway.setTr(hallway_x + hallway.getWidth()/2, k - 1);
-                hallway.setBr(hallway_x + hallway.getWidth()/2, tl[1] + 1);
+                hallway.setBl(hallway.hx - hallway.getWidth()/2, tl[1] + 1);
+                hallway.setTl(hallway.hx - hallway.getWidth()/2, k - 1);
+                hallway.setTr(hallway.hx + hallway.getWidth()/2, k - 1);
+                hallway.setBr(hallway.hx + hallway.getWidth()/2, tl[1] + 1);
                 hallway.x = hallway.bl[0];
                 hallway.y = hallway.bl[1];
-                hallway.drawRoom(map, Tileset.FLOOR);
+                hallway.drawRoom(map, Tileset.TREE);
                 utils.addHallway(hallway);
                 clearPath = true;
                 break;
@@ -302,6 +309,8 @@ public class Room {
         }
     return clearPath;
     }
+
+
 
 
     @Override
